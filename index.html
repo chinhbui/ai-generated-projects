@@ -30,6 +30,7 @@
     .count { font-size:13px; color:#8da4ba; }
     .projects { padding-bottom:100px; }
     .card { border:1px solid #2c4260; background:linear-gradient(140deg,#162945,#101b2d 74%); border-radius:20px; overflow:hidden; box-shadow:0 22px 70px #0004; display:grid; grid-template-columns:1.06fr .94fr; }
+    .card + .card { margin-top:24px; }
     .preview { min-height:300px; background:radial-gradient(circle at 50% 42%,#255183 0,#112139 55%,#0b1423 90%); display:flex; align-items:center; justify-content:center; padding:30px; overflow:hidden; }
     svg { width:100%; max-width:450px; height:auto; }
     .content { padding:44px 40px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; }
@@ -55,7 +56,7 @@
       <p class="intro">Không gian riêng cho các mô phỏng, ứng dụng nhỏ và thử nghiệm lập trình được tạo với sự hỗ trợ của AI. Mỗi demo có mã nguồn độc lập và có thể chạy trực tiếp trên trình duyệt.</p>
     </section>
     <section class="projects" aria-labelledby="projects-title">
-      <div class="sectionhead"><h2 id="projects-title">Interactive demos</h2><span class="count">01 PROJECT</span></div>
+      <div class="sectionhead"><h2 id="projects-title">Interactive demos</h2><span class="count">02 PROJECTS</span></div>
       <article class="card">
         <div class="preview" aria-hidden="true">
           <svg viewBox="0 0 510 260" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -90,6 +91,32 @@
           <h3>BMW Inline-Six Engine</h3>
           <p>Mô phỏng cắt lớp động cơ 6 xi-lanh thẳng hàng với piston, trục khuỷu, chu trình 4 kỳ và điều chỉnh RPM theo thời gian thực.</p>
           <a class="cta" href="./projects/bmw-inline-six/">Mở mô phỏng <span aria-hidden="true">↗</span></a>
+        </div>
+      </article>
+      <article class="card">
+        <div class="preview" style="background:radial-gradient(ellipse at 60% 25%,#407c9f 0%,#173d5b 52%,#0b2036 100%)" aria-hidden="true">
+          <svg viewBox="0 0 510 260" xmlns="http://www.w3.org/2000/svg" fill="none">
+            <defs><linearGradient id="plane" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d0e3e9"/><stop offset="1" stop-color="#738d9d"/></linearGradient><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#76b4d5"/><stop offset="1" stop-color="#142b44"/></linearGradient></defs>
+            <rect x="14" y="20" width="482" height="220" rx="15" fill="url(#sky)" stroke="#81acc2" stroke-opacity=".5"/>
+            <path d="M14 184Q110 148 190 180T496 166V239H14Z" fill="#547a86" opacity=".6"/>
+            <path d="M29 212Q130 180 229 208T480 190" stroke="#bde0e8" stroke-opacity=".35" stroke-width="2"/>
+            <g transform="translate(253 128) rotate(-21)">
+              <path d="M0-96L13-48L15-21L74 21L76 34L29 25L21 60L42 84L38 94L11 80L0 92L-11 80L-38 94L-42 84L-21 60L-29 25L-76 34L-74 21L-15-21L-13-48Z" fill="url(#plane)" stroke="#e9f5fa" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M-9-45Q0-54 9-45L11-13Q0-2-11-13Z" fill="#163b55" stroke="#b9d4e1"/>
+              <path d="M-74 21L-28 15L-20 27M74 21L28 15L20 27" stroke="#345d76" stroke-width="2"/>
+              <path d="M-25 57L-23 89L-17 85L-10 63M25 57L23 89L17 85L10 63" stroke="#476c7a" stroke-width="2"/>
+              <path d="M-6 91L0 119L6 91" fill="#a9e3ff" opacity=".65"/>
+            </g>
+            <g stroke="#bbf5d8" opacity=".7" stroke-width="1.5"><path d="M38 52H91M38 52V71M419 205H472M472 186V205"/><circle cx="43" cy="59" r="2" fill="#bbf5d8"/><circle cx="460" cy="199" r="2" fill="#bbf5d8"/></g>
+            <text x="35" y="39" fill="#d3f2ff" font-size="10" letter-spacing="3" font-family="monospace">FLIGHT SIM / 001</text>
+            <text x="361" y="221" fill="#b3ffe3" font-size="12" letter-spacing="2" font-family="monospace">F-35A</text>
+          </svg>
+        </div>
+        <div class="content">
+          <span class="tag">Interactive simulation · WebGL / Three.js</span>
+          <h3>F-35A — Acceleration & Dive</h3>
+          <p>Mô phỏng không gian 3D cảnh tiêm kích F-35A tăng tốc, hạ mũi bổ nhào và kéo lên, với 3 góc camera, HUD tốc độ, độ cao, Mach và lực G ước tính.</p>
+          <a class="cta" href="./projects/f35-flight-simulator/">Mở mô phỏng <span aria-hidden="true">↗</span></a>
         </div>
       </article>
     </section>
