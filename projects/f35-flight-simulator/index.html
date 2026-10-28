@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071321">
+<meta name="description" content="Mô phỏng 3D tương tác F-35A tăng tốc, bổ nhào và phục hồi độ cao.">
+<title>F-35A | Acceleration & Dive — Flight Lab</title>
+<style>
+:root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#eaf5ff;background:#071321;color-scheme:dark;--line:#a9d8fa40;--lime:#b4f9cd;--muted:#a9c4d9}
+*{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #a9f8e0;outline-offset:3px}
+#scene{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:none}
+.vignette{position:fixed;inset:0;pointer-events:none;background:linear-gradient(180deg,#03101c8c 0%,transparent 22%,transparent 73%,#03101c99 100%),radial-gradient(ellipse at center,transparent 25%,#00122255 100%)}
+.ui{position:fixed;inset:0;pointer-events:none;padding:clamp(14px,2vw,30px);display:flex;flex-direction:column;justify-content:space-between}
+.ui button,.ui input,.ui a{pointer-events:auto}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.brandline{display:flex;gap:12px;align-items:center;color:#dceeff}
+.mark{display:grid;place-items:center;width:39px;height:39px;border:1px solid #b6e5ff65;border-radius:7px;color:var(--lime);font-size:16px;font-weight:900;letter-spacing:-2px;background:#081e3180;box-shadow:inset 0 0 18px #7af5c414}
+.brandline .small{font-size:10px;letter-spacing:.19em;color:#a5c7d9;text-transform:uppercase;font-weight:700}
+.brandline .title{font-size:17px;letter-spacing:.035em;font-weight:800}
+.topright{display:flex;gap:9px;align-items:center}
+.pill{border:1px solid #b0dfed51;background:#071b2ca8;padding:9px 12px;border-radius:40px;font-size:10px;letter-spacing:.11em;text-transform:uppercase;font-weight:800;backdrop-filter:blur(12px)}
+.pill.live:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#88ffc1;box-shadow:0 0 11px #88ffc1;margin-right:8px}
+.back{pointer-events:auto;color:#d4edff;text-decoration:none;background:#071b2ca8;border:1px solid #b0dfed51;border-radius:40px;padding:9px 13px;font-size:11px}
+.leftpanel{position:absolute;left:clamp(14px,2vw,30px);top:116px;max-width:250px}
+.eyebrow{font-size:10px;color:var(--lime);text-transform:uppercase;letter-spacing:.23em;font-weight:800;margin:0 0 8px}
+.leftpanel h1{font-size:clamp(32px,3.7vw,58px);line-height:.97;letter-spacing:-.06em;margin:0 0 14px;font-weight:800;text-shadow:0 4px 25px #03111aaa}
+.leftpanel h1 span{color:#bbddf8;font-weight:350}
+.subtitle{font-size:12px;line-height:1.65;color:#d5e9f4c9;margin:0 0 23px;max-width:230px}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 17px}
+.metric{border-top:1px solid #ceeaff55;padding-top:9px}
+.metric .label{font-size:9px;letter-spacing:.13em;color:#b7d6e6;text-transform:uppercase;margin-bottom:3px}
+.metric .value{font-weight:650;letter-spacing:-.04em;font-size:clamp(21px,2.1vw,30px);font-variant-numeric:tabular-nums}
+.metric .unit{font-size:10px;font-weight:550;letter-spacing:0;color:#b8d8e3;margin-left:4px}
+.metric .accent{color:var(--lime)}
+.centerhud{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:150px;height:150px;opacity:.85;pointer-events:none}
+.centerhud:before,.centerhud:after{content:"";position:absolute;top:50%;width:45px;border-top:1px solid #d4ffedb3}
+.centerhud:before{left:0}.centerhud:after{right:0}
+.dot{position:absolute;left:50%;top:50%;width:6px;height:6px;transform:translate(-50%,-50%);border:1px solid #dcffec;border-radius:50%;box-shadow:0 0 9px #a9ffdd}
+.corner{position:absolute;width:18px;height:18px;border:1px solid #c7fce599}
+.corner.tl{top:16px;left:30px;border-right:0;border-bottom:0}.corner.tr{top:16px;right:30px;border-left:0;border-bottom:0}
+.corner.bl{bottom:16px;left:30px;border-right:0;border-top:0}.corner.br{bottom:16px;right:30px;border-left:0;border-top:0}
+.rightpanel{position:absolute;right:clamp(14px,2vw,30px);top:116px;text-align:right}
+.rightpanel .caption{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#d0eaff}
+.pitch{font-size:39px;font-weight:650;letter-spacing:-.055em;font-variant-numeric:tabular-nums}
+.vsi{font-size:13px;color:var(--lime);font-weight:650}
+.throttle{margin-top:27px;display:flex;align-items:center;justify-content:flex-end;gap:9px}
+.throttlebar{height:90px;width:8px;border:1px solid #d2e9ff70;position:relative;border-radius:3px;background:#071b2b94;overflow:hidden}
+.throttlefill{position:absolute;bottom:0;left:1px;right:1px;background:linear-gradient(#9effcc,#48bbdd);height:100%}
+.throttlevalue{font-variant-numeric:tabular-nums;font-size:22px;font-weight:700}
+.bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.timeline{width:min(585px,60vw);background:#061727b8;border:1px solid #bee5ff3c;backdrop-filter:blur(16px);border-radius:12px;padding:16px 18px}
+.phasehead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:11px}
+.phasehead strong{font-size:12px;letter-spacing:.035em}.phasehead span{font:11px ui-monospace,SFMono-Regular,monospace;color:#a5c8da}
+.track{height:4px;background:#d0e7fd35;border-radius:10px;position:relative;overflow:hidden}
+.progress{height:100%;width:0;background:#b0ffd8;box-shadow:0 0 13px #b0ffd8}
+.stages{display:flex;justify-content:space-between;gap:8px;margin-top:10px}
+.stages span{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:#9dbece}
+.stages span.active{color:#c6ffde}
+.controls{min-width:306px;pointer-events:auto;background:#061727d4;border:1px solid #bee5ff3c;backdrop-filter:blur(16px);border-radius:12px;padding:14px}
+.controls .row{display:flex;gap:6px;align-items:center}
+.btn{background:#18344a;border:1px solid #52758b;border-radius:7px;padding:9px 13px;color:#e9f8ff;font-size:11px;font-weight:750}
+.btn:hover{background:#28506b}.btn.primary{background:#b7fbd7;color:#0a2b31;border-color:#b7fbd7}
+.btn.selected{border-color:#a8ffde;color:#b8ffe0;background:#235566}
+.btn:disabled{opacity:.4;cursor:default}
+.divider{height:1px;background:#bde5ff2f;margin:12px 0}
+.control-label{font-size:10px;color:#b9d5e3;text-transform:uppercase;letter-spacing:.11em;margin-right:auto}
+input[type=range]{width:100%;accent-color:#b0ffd8;cursor:pointer}
+.range-row{display:flex;align-items:center;gap:10px}.range-row label{font-size:10px;color:#a6cddd;white-space:nowrap}
+.range-row output{font:11px ui-monospace,SFMono-Regular,monospace;min-width:37px;text-align:right;color:#b6ffdb}
+.footnote{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);font-size:9px;color:#dceefd9a;text-align:center;pointer-events:none;white-space:nowrap}
+#fallback{display:none;position:fixed;inset:0;z-index:4;background:#071321;padding:25vh 10vw;text-align:center;font-size:16px}
+#fallback a{color:#b5fbdc}
+@media(max-width:850px){.leftpanel{top:90px}.rightpanel{top:98px}.timeline{width:100%}.bottom{flex-direction:column;align-items:stretch}.controls{min-width:0}.stages span{font-size:8px}.footnote{display:none}}
+@media(max-width:540px){.ui{padding:12px}.brandline .small{font-size:8px}.brandline .title{font-size:12px}.mark{width:32px;height:32px}.topright .pill{display:none}.back{font-size:10px}.leftpanel{top:68px;max-width:180px}.leftpanel h1{font-size:32px}.subtitle{display:none}.metrics{gap:10px}.metric .value{font-size:20px}.metric .label{font-size:8px}.rightpanel{top:74px}.rightpanel .pitch{font-size:28px}.rightpanel .throttle{margin-top:12px}.rightpanel .throttlebar{height:62px}.rightpanel .caption{font-size:8px}.rightpanel .throttlevalue{font-size:16px}.centerhud{width:90px;height:90px}.centerhud:before,.centerhud:after{width:20px}.centerhud .corner{display:none}.timeline{padding:11px 12px}.controls{padding:10px}.btn{padding:8px 9px}.phasehead strong{font-size:11px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="scene" aria-label="Mô phỏng máy bay F-35A trên không trong không gian ba chiều"></canvas>
+<div class="vignette"></div>
+<div class="ui">
+ <header class="top">
+  <div class="brandline"><div class="mark">F35</div><div><div class="small">Flight dynamics / 001</div><div class="title">F-35A LIGHTNING II</div></div></div>
+  <div class="topright"><div class="pill live" id="status">Simulation running</div><a class="back" href="../../">← Projects</a></div>
+ </header>
+ <section class="leftpanel" aria-label="Flight instruments">
+  <div class="eyebrow">Flight experiment</div>
+  <h1>FULL<br>THROTTLE<span>.<br>DIVE.</span></h1>
+  <p class="subtitle">Theo dõi máy bay tăng tốc, hạ mũi bổ nhào và kéo lên phục hồi độ cao.</p>
+  <div class="metrics">
+   <div class="metric"><div class="label">Airspeed</div><div class="value"><span id="speed">—</span><span class="unit">km/h</span></div></div>
+   <div class="metric"><div class="label">Altitude</div><div class="value"><span id="altitude">—</span><span class="unit">m</span></div></div>
+   <div class="metric"><div class="label">Mach (approx.)</div><div class="value accent" id="mach">—</div></div>
+   <div class="metric"><div class="label">G load (est.)</div><div class="value" id="gforce">—</div></div>
+  </div>
+ </section>
+ <div class="centerhud" aria-hidden="true"><span class="dot"></span><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span></div>
+ <aside class="rightpanel" aria-label="Attitude and throttle">
+  <div class="caption">Pitch angle</div><div class="pitch" id="pitch">+02.0°</div><div class="vsi" id="vsi">+0 m/s VSI</div>
+  <div class="throttle"><div><div class="caption">Thrust</div><div class="throttlevalue" id="throttle-read">100%</div></div><div class="throttlebar"><div class="throttlefill" id="throttle-fill"></div></div></div>
+ </aside>
+ <footer class="bottom">
+  <div class="timeline">
+   <div class="phasehead"><strong id="phase">01 / ACCELERATE</strong><span id="timer">00:00 / 00:40</span></div>
+   <div class="track"><div class="progress" id="progress"></div></div>
+   <div class="stages"><span data-stage="0" class="active">01 · Accel</span><span data-stage="1">02 · Push-over</span><span data-stage="2">03 · Dive</span><span data-stage="3">04 · Recover</span><span data-stage="4">05 · Level</span></div>
+  </div>
+  <div class="controls">
+   <div class="row"><button class="btn primary" id="play" type="button">Ⅱ Pause</button><button class="btn" id="replay" type="button">↺ Replay</button><button class="btn" id="dive" type="button">↘ Dive now</button></div>
+   <div class="divider"></div>
+   <div class="row" style="margin-bottom:10px"><span class="control-label">Camera</span><button class="btn selected" data-camera="chase" type="button">Chase</button><button class="btn" data-camera="side" type="button">Side</button><button class="btn" data-camera="top" type="button">Top</button></div>
+   <div class="range-row"><label for="throttle">Thrust</label><input id="throttle" type="range" min="50" max="100" value="100" step="5"><output id="throttle-output">100%</output></div>
+  </div>
+ </footer>
+</div>
+<div class="footnote">Visual / educational simulation · Approximate flight model, not a certified F-35 flight simulator</div>
+<div id="fallback"><h2>Không thể khởi tạo mô phỏng 3D</h2><p>Kiểm tra kết nối mạng, bật WebGL và tải lại trang. Trang này dùng Three.js từ CDN.</p><a href="../../">Quay lại thư viện</a></div>
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js";
+const canvas=document.getElementById("scene");
+const $=id=>document.getElementById(id);
+const clamp=THREE.MathUtils.clamp;
+let renderer;
+try { renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:"high-performance"}); }
+catch(err){$("fallback").style.display="block";throw err;}
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.setSize(innerWidth,innerHeight,false);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.3;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x86b7d5);
+scene.fog=new THREE.FogExp2(0x9fc6cf,0.000065);
+const camera=new THREE.PerspectiveCamera(47,innerWidth/innerHeight,0.1,65000);
+const hemi=new THREE.HemisphereLight(0xd7eaff,0x415c52,2.8);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffeed5,3.0);sun.position.set(-4000,8500,-9000);scene.add(sun);
+const atmosphere=new THREE.Mesh(new THREE.SphereGeometry(30000,24,16),new THREE.ShaderMaterial({
+ side:THREE.BackSide,depthWrite:false,vertexShader:"varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+ fragmentShader:"varying vec3 p;void main(){float t=clamp(normalize(p).y*.5+.5,0.,1.);vec3 h=vec3(.65,.81,.87);vec3 top=vec3(.055,.21,.38);gl_FragColor=vec4(mix(h,top,smoothstep(.35,1.,t)),1.);}"
+}));scene.add(atmosphere);
+const groundGeo=new THREE.PlaneGeometry(100000,100000,90,90);
+groundGeo.rotateX(-Math.PI/2);
+const gp=groundGeo.attributes.position;
+const colors=[];
+const c1=new THREE.Color(0x657d70),c2=new THREE.Color(0x92a48b);
+for(let i=0;i<gp.count;i++){
+ const x=gp.getX(i),z=gp.getZ(i);
+ const height=90*Math.sin(x*.0013)*Math.cos(z*.00077)+45*Math.sin(z*.0012+x*.0008);
+ gp.setY(i,height);
+ const shade=clamp(.5+.25*Math.sin(x*.0008)+.2*Math.cos(z*.0011)+height/600,0,1);
+ const c=c1.clone().lerp(c2,shade);colors.push(c.r,c.g,c.b);
+}
+groundGeo.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));groundGeo.computeVertexNormals();
+const terrain=new THREE.Mesh(groundGeo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}));scene.add(terrain);
+function cloudTexture(){
+ const c=document.createElement("canvas");c.width=c.height=256;
+ const g=c.getContext("2d");
+ for(let i=0;i<10;i++){
+  const x=128+Math.cos(i*2.399)*45,y=128+Math.sin(i*2.399)*24,r=56+(i%3)*15;
+  const grad=g.createRadialGradient(x,y,4,x,y,r);
+  grad.addColorStop(0,"rgba(255,255,255,.57)");grad.addColorStop(.55,"rgba(239,249,255,.34)");grad.addColorStop(1,"rgba(236,248,255,0)");
+  g.fillStyle=grad;g.fillRect(0,0,256,256);
+ }
+ const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;return texture;
+}
+const cloudMaterial=new THREE.SpriteMaterial({map:cloudTexture(),transparent:true,opacity:.7,depthWrite:false,fog:true});
+let seed=1337;
+function rand(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646;}
+for(let i=0;i<165;i++){
+ const s=new THREE.Sprite(cloudMaterial);
+ s.position.set((rand()-.5)*18000,1600+rand()*4900,1800-rand()*31000);
+ const width=360+rand()*700;s.scale.set(width,width*(.34+rand()*.24),1);scene.add(s);
+}
+const jet=new THREE.Group();scene.add(jet);
+const paint=new THREE.MeshStandardMaterial({color:0x8398a3,metalness:.64,roughness:.54,flatShading:true,side:THREE.DoubleSide});
+const wingPaint=new THREE.MeshStandardMaterial({color:0x667b85,metalness:.58,roughness:.59,flatShading:true,side:THREE.DoubleSide});
+const edgePaint=new THREE.MeshStandardMaterial({color:0x566e79,metalness:.54,roughness:.64,flatShading:true,side:THREE.DoubleSide});
+const canopyPaint=new THREE.MeshPhysicalMaterial({color:0x132b40,metalness:.48,roughness:.14,transparent:true,opacity:.95,clearcoat:1,clearcoatRoughness:.14});
+const dark=new THREE.MeshStandardMaterial({color:0x162833,metalness:.48,roughness:.58,side:THREE.DoubleSide});
+function face(vertices,material){
+ const geometry=new THREE.BufferGeometry();
+ const out=[];for(let i=1;i<vertices.length-1;i++)for(const p of [vertices[0],vertices[i],vertices[i+1]])out.push(...p);
+ geometry.setAttribute("position",new THREE.Float32BufferAttribute(out,3));
+ geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,material);jet.add(mesh);return mesh;
+}
+function prism(points,ytop,thickness,topMat=wingPaint){
+ face(points.map(p=>[p[0],ytop,p[1]]),topMat);
+ face([...points].reverse().map(p=>[p[0],ytop-thickness,p[1]]),edgePaint);
+ points.forEach((p,i)=>{
+  const q=points[(i+1)%points.length];
+  face([[p[0],ytop,p[1]],[q[0],ytop,q[1]],[q[0],ytop-thickness,q[1]],[p[0],ytop-thickness,p[1]]],edgePaint);
+ });
+}
+// F-35A proportions: 15.7 m length, 10.7 m wingspan. z negative = nose.
+const sections=[
+ [-7.85,.02,.02,.01],[-6.8,.27,.18,.17],[-4.7,.74,.58,.40],[-2.5,1.00,.70,.62],
+ [0,1.13,.67,.64],[2.45,1.03,.60,.60],[5.4,.78,.53,.52],[7.5,.54,.40,.40]
+];
+const ring=(z,w,top,bottom)=>[
+ [0,top,z],[-w*.75,top*.68,z],[-w,.08,z],[-w*.72,-bottom,z],
+ [0,-bottom*1.12,z],[w*.72,-bottom,z],[w,.08,z],[w*.75,top*.68,z]];
+for(let i=0;i<sections.length-1;i++){
+ const a=ring(...sections[i]),b=ring(...sections[i+1]);
+ for(let j=0;j<8;j++){const k=(j+1)%8;face([a[j],a[k],b[k],b[j]],j<3||j>6?paint:edgePaint);}
+}
+for(const side of [-1,1]){
+ prism([[side*.95,-2.65],[side*2.12,-2.25],[side*5.35,.55],[side*5.15,1.35],[side*2.38,2.75],[side*.98,2.92]],.13,.27);
+ prism([[side*.72,4.45],[side*1.9,4.05],[side*3.43,5.50],[side*3.15,6.1],[side*.78,6.9]],.15,.21,paint);
+ // Outward-canted twin vertical stabilizers, each with thickness.
+ const root1=[side*1.00,.25,3.8],root2=[side*1.23,.23,7.0];
+ const tip1=[side*1.8,2.55,5.05],tip2=[side*2.02,2.43,6.35];
+ face([root1,tip1,tip2,root2],wingPaint);
+ face([[root1[0]+side*.10,root1[1],root1[2]],[root2[0]+side*.10,root2[1],root2[2]],[tip2[0]+side*.10,tip2[1],tip2[2]],[tip1[0]+side*.10,tip1[1],tip1[2]]],paint);
+ face([tip1, [tip1[0]+side*.10,tip1[1],tip1[2]],[tip2[0]+side*.10,tip2[1],tip2[2]],tip2],edgePaint);
+ // Inlets: dark recesses on the shoulders.
+ face([[side*.95,.35,-1.15],[side*1.42,.29,-.7],[side*1.45,-.26,1.25],[side*1.02,-.27,1.0]],dark);
+}
+// Cockpit canopy and its rim.
+const canopyBase=new THREE.Mesh(new THREE.SphereGeometry(1,24,14),canopyPaint);
+canopyBase.scale.set(.70,.49,2.07);canopyBase.position.set(0,.79,-3.42);jet.add(canopyBase);
+const canopyFrame=new THREE.Mesh(new THREE.TorusGeometry(.70,.055,6,24,Math.PI),edgePaint);
+canopyFrame.rotation.x=Math.PI/2;canopyFrame.position.set(0,.62,-3.40);jet.add(canopyFrame);
+const nozzle=new THREE.Mesh(new THREE.CylinderGeometry(.63,.76,.75,24,1,true),dark);
+nozzle.rotation.x=Math.PI/2;nozzle.position.set(0,-.12,7.55);jet.add(nozzle);
+const exhaustCore=new THREE.Mesh(new THREE.CircleGeometry(.52,24),new THREE.MeshBasicMaterial({color:0x27475b,side:THREE.DoubleSide}));
+exhaustCore.position.set(0,-.12,7.98);jet.add(exhaustCore);
+const flameMaterial=new THREE.MeshBasicMaterial({color:0xffb667,transparent:true,opacity:.62,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending});
+const flame=new THREE.Mesh(new THREE.ConeGeometry(.55,4.0,16,1,true),flameMaterial);
+flame.rotation.x=Math.PI/2;flame.position.set(0,-.12,9.75);jet.add(flame);
+const flameInner=new THREE.Mesh(new THREE.ConeGeometry(.28,3.3,12,1,true),new THREE.MeshBasicMaterial({color:0x96d8ff,transparent:true,opacity:.82,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));
+flameInner.rotation.x=Math.PI/2;flameInner.position.set(0,-.12,9.35);jet.add(flameInner);
+// Small, non-functional decorative panel lines.
+function outline(points,materialColor=0xc4d8e2){
+ const arr=[];for(const p of points)arr.push(...p);
+ const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(arr,3));
+ const line=new THREE.Line(g,new THREE.LineBasicMaterial({color:materialColor,transparent:true,opacity:.28}));jet.add(line);
+}
+for(const side of [-1,1]){
+ outline([[side*1.1,.155,-2.25],[side*3.7,.155,.05],[side*4.9,.155,.9]]);
+ outline([[side*1.15,.17,4.7],[side*2.9,.17,5.55]]);
+}
+const initial={t:0,speed:185,altitude:4700,pitch:THREE.MathUtils.degToRad(2),distance:0,throttle:1,paused:false,camera:"chase",g:1,vsi:0,stage:0};
+const state={...initial};
+const tmpCam=new THREE.Vector3(),tmpLook=new THREE.Vector3();
+let last=performance.now();
+function reset(){
+ Object.assign(state,{...initial,throttle:Number($("throttle").value)/100,camera:state.camera});
+ updateButtons();
+}
+function phaseAt(t){return t<9?0:t<16?1:t<25?2:t<32?3:4;}
+const phaseNames=["01 / ACCELERATE","02 / PUSH-OVER","03 / STEEP DIVE","04 / PULL-UP","05 / LEVEL FLIGHT"];
+function updatePhysics(dt){
+ if(state.paused||state.t>=40)return;
+ const safe=Math.min(dt,.04);state.t=Math.min(40,state.t+safe);
+ state.stage=phaseAt(state.t);
+ let commanded=2;
+ if(state.t>=9&&state.t<16)commanded=2-44*(state.t-9)/7;
+ else if(state.t>=16&&state.t<25)commanded=-42;
+ else if(state.t>=25&&state.t<32)commanded=-42+48*(state.t-25)/7;
+ else if(state.t>=32)commanded=6;
+ if(state.altitude<850&&commanded<12)commanded=12; // terrain clearance protection
+ const prev=state.pitch;
+ const target=THREE.MathUtils.degToRad(commanded);
+ const maxRate=THREE.MathUtils.degToRad(8)*safe;
+ state.pitch+=clamp(target-state.pitch,-maxRate,maxRate);
+ // Simplified longitudinal point-mass model: engine acceleration - quadratic drag - gravity projection.
+ const acceleration=18*state.throttle-0.00015*state.speed**2-9.81*Math.sin(state.pitch);
+ state.speed=clamp(state.speed+acceleration*safe,110,440);
+ state.vsi=state.speed*Math.sin(state.pitch);
+ state.altitude=Math.max(180,state.altitude+state.vsi*safe);
+ state.distance+=state.speed*Math.cos(state.pitch)*safe;
+ state.g=clamp(1+state.speed*(state.pitch-prev)/Math.max(safe,.001)/9.81,-2.5,8.5);
+ if(state.t>=40)state.paused=true;
+}
+function updateGraphics(dt){
+ jet.position.set(0,state.altitude,-state.distance);
+ jet.rotation.x=state.pitch;
+ jet.rotation.z=Math.sin(state.t*.35)*.015;
+ const chase=state.camera==="chase",side=state.camera==="side";
+ if(chase)tmpCam.set(7.5,8.2,29.5);
+ else if(side)tmpCam.set(30,5.8,9.4);
+ else tmpCam.set(.5,39,16);
+ const jetPosition=jet.position;
+ tmpCam.add(jetPosition);
+ const damping=1-Math.exp(-dt*3);
+ if(!camera.userData.ready){camera.position.copy(tmpCam);camera.userData.ready=true;}
+ camera.position.lerp(tmpCam,damping);
+ if(chase)tmpLook.set(0,1.2,-4.5).add(jetPosition);
+ else if(side)tmpLook.set(0,.6,0).add(jetPosition);
+ else tmpLook.set(0,0,0).add(jetPosition);
+ const desiredLook=tmpLook.clone();
+ if(!camera.userData.look)camera.userData.look=desiredLook.clone();
+ camera.userData.look.lerp(desiredLook,damping);
+ camera.lookAt(camera.userData.look);
+ // Keep aircraft legible during speed changes; avoid impossible camera translations.
+ flame.visible=flameInner.visible=state.throttle>=.8;
+ flame.scale.setScalar(.75+state.throttle*.3+Math.sin(state.t*29)*.06);
+ flameInner.scale.setScalar(.78+Math.sin(state.t*33)*.035);
+ cloudMaterial.opacity=.65;
+}
+function fmt(n){return Math.round(n).toLocaleString("en-US");}
+function updateHUD(){
+ $("speed").textContent=fmt(state.speed*3.6);
+ $("altitude").textContent=fmt(state.altitude);
+ // Approximate local speed of sound for illustration (not a full atmosphere model).
+ const sound=340-0.004*state.altitude;
+ $("mach").textContent=(state.speed/sound).toFixed(2);
+ $("gforce").textContent=state.g.toFixed(1)+"g";
+ const deg=THREE.MathUtils.radToDeg(state.pitch);
+ $("pitch").textContent=(deg>=0?"+":"")+deg.toFixed(1)+"°";
+ $("vsi").textContent=(state.vsi>=0?"+":"")+fmt(state.vsi)+" m/s VSI";
+ $("phase").textContent=phaseNames[state.stage];
+ $("timer").textContent="00:"+String(Math.floor(state.t)).padStart(2,"0")+" / 00:40";
+ $("progress").style.width=100*state.t/40+"%";
+ $("throttle-read").textContent=Math.round(state.throttle*100)+"%";
+ $("throttle-fill").style.height=100*state.throttle+"%";
+ document.querySelectorAll("[data-stage]").forEach(el=>el.classList.toggle("active",Number(el.dataset.stage)===state.stage));
+ $("status").textContent=state.t>=40?"Sequence complete":state.paused?"Simulation paused":"Simulation running";
+ $("status").classList.toggle("live",!state.paused);
+ $("play").textContent=state.paused?"▶ Resume":"Ⅱ Pause";
+}
+function updateButtons(){document.querySelectorAll("[data-camera]").forEach(b=>b.classList.toggle("selected",b.dataset.camera===state.camera));updateHUD();}
+$("play").addEventListener("click",()=>{if(state.t>=40)reset();else state.paused=!state.paused;updateHUD();});
+$("replay").addEventListener("click",reset);
+$("dive").addEventListener("click",()=>{if(state.t<9)state.t=9;else if(state.t>=25)state.t=9;state.paused=false;});
+$("throttle").addEventListener("input",e=>{state.throttle=Number(e.target.value)/100;$("throttle-output").textContent=e.target.value+"%";});
+document.querySelectorAll("[data-camera]").forEach(button=>button.addEventListener("click",()=>{state.camera=button.dataset.camera;updateButtons();}));
+document.addEventListener("keydown",e=>{if(e.target instanceof HTMLInputElement)return;if(e.code==="Space"){e.preventDefault();$("play").click();}if(e.key.toLowerCase()==="r")reset();if(e.key==="1")state.camera="chase";if(e.key==="2")state.camera="side";if(e.key==="3")state.camera="top";updateButtons();});
+addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight,false);});
+document.addEventListener("visibilitychange",()=>{last=performance.now();});
+function animate(now){
+ requestAnimationFrame(animate);
+ const dt=Math.min((now-last)/1000,.05);last=now;
+ updatePhysics(dt);updateGraphics(dt);updateHUD();
+ renderer.render(scene,camera);
+}
+updateButtons();requestAnimationFrame(animate);
+</script>
+</body>
+</html>
