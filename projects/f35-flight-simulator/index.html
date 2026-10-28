@@ -324,7 +324,7 @@ function updateHUD(){
 function updateButtons(){document.querySelectorAll("[data-camera]").forEach(b=>b.classList.toggle("selected",b.dataset.camera===state.camera));updateHUD();}
 $("play").addEventListener("click",()=>{if(state.t>=40)reset();else state.paused=!state.paused;updateHUD();});
 $("replay").addEventListener("click",reset);
-$("dive").addEventListener("click",()=>{if(state.t<9)state.t=9;else if(state.t>=25)state.t=9;state.paused=false;});
+$("dive").addEventListener("click",()=>{if(state.t>=25)reset();if(state.t<9)state.t=9;state.paused=false;updateHUD();});
 $("throttle").addEventListener("input",e=>{state.throttle=Number(e.target.value)/100;$("throttle-output").textContent=e.target.value+"%";});
 document.querySelectorAll("[data-camera]").forEach(button=>button.addEventListener("click",()=>{state.camera=button.dataset.camera;updateButtons();}));
 document.addEventListener("keydown",e=>{if(e.target instanceof HTMLInputElement)return;if(e.code==="Space"){e.preventDefault();$("play").click();}if(e.key.toLowerCase()==="r")reset();if(e.key==="1")state.camera="chase";if(e.key==="2")state.camera="side";if(e.key==="3")state.camera="top";updateButtons();});
